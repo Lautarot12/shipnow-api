@@ -78,6 +78,15 @@ route.post('/login', async (req, res)=>{
     res.status(200).send('Login exitoso')
 })
 
+route.post('/logout', async (req, res)=>{
+    req.session.destroy((error)=>{
+        if (error) {
+            return res.status(500).send('No se pudo cerrar la sesion')
+        }
+        res.status(200).send('Sesion cerrada.')
+    })
+})
+
 
 route.get('/cart/:cid', async (req, res) =>{
     const cid = req.params.cid
