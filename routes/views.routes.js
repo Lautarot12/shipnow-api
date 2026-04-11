@@ -1,10 +1,18 @@
 import { Router } from 'express'
 import __dirname from '../utils.js'
 import Product from '../models/product.model.js'
+import Cart from '../models/cart.model.js'
 
 const route = Router()
 
-route.get('/', async (req, res)=>{
+function authMiddleware (req, res, next) {
+    if (!req.session.user) {
+        return res.status(401).send('Error al autenticar')
+    }
+    next()
+}
+
+route.get('/', authMiddleware, async (req, res)=>{
     try {
         const { limit = 10, page = 1 } = req.query
 
@@ -28,7 +36,7 @@ route.get('/realtimeproducts', (req, res)=>{
     res.render('realTimeProducts')
 })
 
-export default route
+
 
 route.get('/products', async (req, res)=>{
     
@@ -53,3 +61,32 @@ route.get('/products', async (req, res)=>{
         nextPage: data.nextPage
     })
 })
+
+
+route.post('/login', async (req, res)=>{
+
+    if (!req.body.email || !req.body.name || !req.body.role) {
+        return res.status(401).send('Error, correo o contrasena incorrectas')
+    } 
+
+    req.session.user = {
+        email: req.body.email,
+        name: req.body.name,
+        role: req.body.role
+    }
+    
+    res.status(200).send('Login exitoso')
+})
+
+
+route.get('/cart/:cid', async (req, res) =>{
+    const cid = req.params.cid
+    const cart = await Cart.findById(cid).populate('products.product')
+})
+
+
+
+
+
+
+export default route

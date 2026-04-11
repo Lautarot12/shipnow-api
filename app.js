@@ -9,6 +9,11 @@ import { Server } from 'socket.io'
 import connectMongoDB from './config/db.js'
 import dotenv from 'dotenv'
 import Product from './models/product.model.js'
+import cookieParser from 'cookie-parser'
+import session from 'express-session'
+import FileStore from 'session-file-store'
+import MongoStore from 'connect-mongo'
+
 
 dotenv.config()
 
@@ -29,12 +34,39 @@ app.engine('handlebars', handlebars.engine())
 app.set('views', __dirname + '/views')
 app.set('view engine', 'handlebars')
 
+app.use(session({
+    secret: process.env.SECRET_KEY,
+    resave: false,
+    saveUninitialized: false,
+    store: MongoStore.create({
+        mongoUrl: process.env.URI_MONGODB,
+        ttl: 14 * 24 * 60
+    }),
+    cookie: {
+        secure: process.env.NODE_ENV === 'production',
+        httpOnly: true,
+        maxAge: 14 * 24 * 60
+    }
+}))
+
 app.use(express.json())
 app.use(express.static(__dirname + '/public'))
 
+app.use(cookieParser(process.env.SECRET_KEY))
 app.use('/api/products', Productsroute)
 app.use('/api/carts', cartsRoute)
 app.use('/', viewsRoute)
+
+app.get('/set-cookie', (req, res)=>{
+    const { idioma } = req.query
+    res.cookie('idioma', idioma).json({msg: 'Idioma guardado en la cookie'})
+})
+
+app.get('/get-cookies', (req, res)=>{
+    console.log(req.cookies)
+    const { idioma } = req.cookies
+    idioma === 'ingles'? res.send('hello') : res.send('Hola')
+})
 
 io.on('connection', async (socket)=>{
     console.log('Nuevo usuario conectado', socket.id)
