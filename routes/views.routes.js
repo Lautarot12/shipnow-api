@@ -12,7 +12,7 @@ function authMiddleware (req, res, next) {
     next()
 }
 
-route.get('/', authMiddleware, async (req, res)=>{
+route.get('/', async (req, res)=>{
     try {
         const { limit = 10, page = 1 } = req.query
 
@@ -38,7 +38,7 @@ route.get('/realtimeproducts', (req, res)=>{
 
 
 
-route.get('/products', async (req, res)=>{
+route.get('/products', authMiddleware, async (req, res)=>{
     
     const { page = 1, limit = 10, sort } = req.query
 
