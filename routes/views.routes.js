@@ -58,7 +58,8 @@ route.get('/products', authMiddleware, async (req, res)=>{
         hasPrevPage: data.hasPrevPage,
         hasNextPage: data.hasNextPage,
         prevPage: data.prevPage,
-        nextPage: data.nextPage
+        nextPage: data.nextPage,
+        user: req.session.user
     })
 })
 
