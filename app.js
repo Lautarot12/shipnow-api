@@ -13,7 +13,10 @@ import cookieParser from 'cookie-parser'
 import session from 'express-session'
 import FileStore from 'session-file-store'
 import MongoStore from 'connect-mongo'
-
+import bcrypt from 'bcrypt'
+import LocalStrategy from 'passport-local.Strategy'
+import User from './models/user.model.js'
+import jsonwebtoken from 'jsonwebtoken'
 
 dotenv.config()
 
@@ -34,6 +37,41 @@ app.engine('handlebars', handlebars.engine())
 app.set('views', __dirname + '/views')
 app.set('view engine', 'handlebars')
 
+function generateToken(user) {
+    return jwt.sign(
+        { userId: user.id, role: user.role },
+        process.env.JWT_SECRET,
+        { expiresIn: '1h' } 
+    )
+}
+
+function protectRoutes(req, res, next) {
+    const authHeader = req.headers.authorization
+    if(!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ message: 'No autorizado' })
+    }
+
+    const token = authHeader.split(' ')[1]
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET)
+        req.user = decoded
+        next()
+    } catch (error) {
+        return res.status(401).json({ meesage: 'Token invalido' })
+    }
+}
+
+function roleMiddleware (allowedRoles) {
+    return (req, res, next) => {
+        if(!allowedRoles.includes(req.user.role)) {
+            return res.status(403).json({ message: 'Acceso denegado' })
+        }
+        next()
+    }
+}
+
+
+ 
 app.use(session({
     secret: process.env.SECRET_KEY,
     resave: false,
@@ -45,7 +83,8 @@ app.use(session({
     cookie: {
         secure: process.env.NODE_ENV === 'production',
         httpOnly: true,
-        maxAge: 1200000
+        maxAge: 1200000,
+        sameSite: 'lax'
     }
 }))
 
@@ -56,6 +95,37 @@ app.use(cookieParser(process.env.SECRET_KEY))
 app.use('/api/products', Productsroute)
 app.use('/api/carts', cartsRoute)
 app.use('/', viewsRoute)
+passport.use(new LocalStrategy({ usernameField: 'email' }, async (email, password, done)=>{
+    try {
+        const user = User.findOne({ email })
+        if (!user) return done(null, false, { message: 'Usuario no encontrado' })
+        const match = await bcrypt.compare(password, user.password)
+        if (!match) return done (null, false, { message: 'Contrasena incorrecta' })
+            return done(null, user)
+    } catch (error) {
+        return done(error)
+    }
+}))
+
+
+const saltRounds = 10
+const password = 'user123'
+
+bcrypt.genSalt(saltRounds, (err, salt)=>{
+    bcrypt.hash(password, salt, (err, hash)=>{
+        if (err) throw err
+        console.log('Hash generado:', hash)
+    })
+})
+
+function roleMiddleware(roles) {
+    return (req, res, next)=>{
+        if (!roles.includes(req.user.role)) {
+            return res.status(403).json({ message: 'Acceso denegado' })
+        }
+        next()
+    }
+}
 
 app.get('/set-cookie', (req, res)=>{
     const { idioma } = req.query
