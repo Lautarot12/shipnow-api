@@ -11,12 +11,13 @@ import dotenv from 'dotenv'
 import Product from './models/product.model.js'
 import cookieParser from 'cookie-parser'
 import session from 'express-session'
-import FileStore from 'session-file-store'
 import MongoStore from 'connect-mongo'
 import bcrypt from 'bcrypt'
-import LocalStrategy from 'passport-local.Strategy'
+import { Strategy as LocalStrategy } from 'passport-local'
 import User from './models/user.model.js'
-import jsonwebtoken from 'jsonwebtoken'
+import jwt from 'jsonwebtoken'
+import passport from 'passport'
+import authRoute from './routes/auth.routes.js'
 
 dotenv.config()
 
@@ -92,12 +93,14 @@ app.use(express.json())
 app.use(express.static(__dirname + '/public'))
 
 app.use(cookieParser(process.env.SECRET_KEY))
+app.use(passport.initialize())
+app.use('/api/v1/auth/', authRoute)
 app.use('/api/products', Productsroute)
 app.use('/api/carts', cartsRoute)
 app.use('/', viewsRoute)
 passport.use(new LocalStrategy({ usernameField: 'email' }, async (email, password, done)=>{
     try {
-        const user = User.findOne({ email })
+        const user = await User.findOne({ email })
         if (!user) return done(null, false, { message: 'Usuario no encontrado' })
         const match = await bcrypt.compare(password, user.password)
         if (!match) return done (null, false, { message: 'Contrasena incorrecta' })
@@ -106,26 +109,6 @@ passport.use(new LocalStrategy({ usernameField: 'email' }, async (email, passwor
         return done(error)
     }
 }))
-
-
-const saltRounds = 10
-const password = 'user123'
-
-bcrypt.genSalt(saltRounds, (err, salt)=>{
-    bcrypt.hash(password, salt, (err, hash)=>{
-        if (err) throw err
-        console.log('Hash generado:', hash)
-    })
-})
-
-function roleMiddleware(roles) {
-    return (req, res, next)=>{
-        if (!roles.includes(req.user.role)) {
-            return res.status(403).json({ message: 'Acceso denegado' })
-        }
-        next()
-    }
-}
 
 app.get('/set-cookie', (req, res)=>{
     const { idioma } = req.query
@@ -157,3 +140,5 @@ io.on('connection', async (socket)=>{
         console.log('se elimino:', deletedProd)
     })
 })
+
+export default generateToken
