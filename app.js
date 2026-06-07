@@ -38,40 +38,6 @@ app.engine('handlebars', handlebars.engine())
 app.set('views', __dirname + '/views')
 app.set('view engine', 'handlebars')
 
-function generateToken(user) {
-    return jwt.sign(
-        { userId: user.id, role: user.role },
-        process.env.JWT_SECRET,
-        { expiresIn: '1h' } 
-    )
-}
-
-function protectRoutes(req, res, next) {
-    const authHeader = req.headers.authorization
-    if(!authHeader || !authHeader.startsWith('Bearer ')) {
-        return res.status(401).json({ message: 'No autorizado' })
-    }
-
-    const token = authHeader.split(' ')[1]
-    try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET)
-        req.user = decoded
-        next()
-    } catch (error) {
-        return res.status(401).json({ meesage: 'Token invalido' })
-    }
-}
-
-function roleMiddleware (allowedRoles) {
-    return (req, res, next) => {
-        if(!allowedRoles.includes(req.user.role)) {
-            return res.status(403).json({ message: 'Acceso denegado' })
-        }
-        next()
-    }
-}
-
-
  
 app.use(session({
     secret: process.env.SECRET_KEY,
@@ -140,5 +106,3 @@ io.on('connection', async (socket)=>{
         console.log('se elimino:', deletedProd)
     })
 })
-
-export default generateToken
