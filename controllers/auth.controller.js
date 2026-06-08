@@ -63,4 +63,9 @@ export const profile = async (req, res) => {
 
 export const admin = async (req, res) => {
     res.status(200).json({ message: 'Bienvenido admin' })
-    }
+}
+
+export const logout = async (req, res) => {
+    res.clearCookie('authToken')
+    res.status(200).json({ message: 'Logout completo' })
+}
