@@ -34,6 +34,15 @@ export const login = async (req, res) => {
         return res.status(404).json({ message: 'Error, contrasena incorrecta' })
     }
     const token = generateToken(coincidence)
+    res.cookie(
+        'authToken',
+        token,
+        {
+            httpOnly: true,
+            sameSite: 'lax',
+            secure: process.env.NODE_ENV === 'production'
+        }
+    )
     return res.status(200).json({ message: 'Login exitoso', token })
 }
 
@@ -51,3 +60,7 @@ export const profile = async (req, res) => {
         role: userExists.role
     }})
 }
+
+export const admin = async (req, res) => {
+    res.status(200).json({ message: 'Bienvenido admin' })
+    }
