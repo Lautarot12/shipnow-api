@@ -13,7 +13,6 @@ import cookieParser from 'cookie-parser'
 import session from 'express-session'
 import MongoStore from 'connect-mongo'
 import bcrypt from 'bcrypt'
-import { Strategy as LocalStrategy } from 'passport-local'
 import User from './models/user.model.js'
 import jwt from 'jsonwebtoken'
 import passport from 'passport'
@@ -64,17 +63,7 @@ app.use('/api/v1/auth/', authRoute)
 app.use('/api/products', Productsroute)
 app.use('/api/carts', cartsRoute)
 app.use('/', viewsRoute)
-passport.use(new LocalStrategy({ usernameField: 'email' }, async (email, password, done)=>{
-    try {
-        const user = await User.findOne({ email })
-        if (!user) return done(null, false, { message: 'Usuario no encontrado' })
-        const match = await bcrypt.compare(password, user.password)
-        if (!match) return done (null, false, { message: 'Contrasena incorrecta' })
-            return done(null, user)
-    } catch (error) {
-        return done(error)
-    }
-}))
+
 
 app.get('/set-cookie', (req, res)=>{
     const { idioma } = req.query

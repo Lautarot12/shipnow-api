@@ -27,11 +27,11 @@ export const login = async (req, res) => {
     const { email, password } = req.body
     const coincidence = await User.findOne({ email })
     if (!coincidence) {
-        return res.status(404).json({ message: 'Error, este email no corresponde a un usuario registrado' })
+        return res.status(401).json({ message: 'Error, credenciales inválidas' })
     }
     const passwordCoincidence = await bcrypt.compare(password, coincidence.password)
     if (!passwordCoincidence) {
-        return res.status(404).json({ message: 'Error, contrasena incorrecta' })
+        return res.status(401).json({ message: 'Error, credenciales inválidas' })
     }
     const token = generateToken(coincidence)
     res.cookie(
@@ -54,6 +54,23 @@ export const profile = async (req, res) => {
     }
     
     return res.status(200).json({ message: 'Usuario', user: {
+        first_name: userExists.first_name,
+        last_name: userExists.last_name,
+        email: userExists.email,
+        role: userExists.role
+    }})
+}
+
+export const session = async (req, res) => {
+    const userId = req.user.userId
+    const userExists = await User.findById(userId)
+    if (!userExists) {
+        return res.status(404).json({ message: 'Error, no se encontro el perfil' })
+    }
+    
+    return res.status(200).json({ message: 'Usuario',
+        authenticated: true,
+        user: {
         first_name: userExists.first_name,
         last_name: userExists.last_name,
         email: userExists.email,
