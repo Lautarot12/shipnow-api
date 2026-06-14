@@ -17,6 +17,8 @@ import User from './models/user.model.js'
 import jwt from 'jsonwebtoken'
 import passport from 'passport'
 import authRoute from './routes/auth.routes.js'
+import { initializeGithubStrategy } from './strategies/github.strategy.js'
+import { initializeLocalStrategy } from './strategies/local.strategy.js'
 
 dotenv.config()
 
@@ -25,6 +27,8 @@ const server = http.createServer(app)
 const io = new Server(server)
 
 connectMongoDB()
+initializeGithubStrategy()
+initializeLocalStrategy()
 
 const PORT = process.env.PORT || 8080
 

@@ -1,5 +1,7 @@
+import passport from 'passport'
 import { Strategy as LocalStrategy } from 'passport-local'
 
+export const initializeLocalStrategy = () => {
 passport.use(new LocalStrategy({ usernameField: 'email' }, async (email, password, done)=>{
     try {
         const user = await User.findOne({ email })
@@ -10,4 +12,4 @@ passport.use(new LocalStrategy({ usernameField: 'email' }, async (email, passwor
     } catch (error) {
         return done(error)
     }
-}))
+}))}

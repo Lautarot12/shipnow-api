@@ -2,6 +2,7 @@ import User from "../models/user.model.js"
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 import { generateToken, protectRoutes } from '../middlewares/auth.middleware.js'
+import passport from "passport"
 
 export const register = async (req, res) => {
     const { first_name, last_name, email, password } = req.body
@@ -85,4 +86,18 @@ export const admin = async (req, res) => {
 export const logout = async (req, res) => {
     res.clearCookie('authToken')
     res.status(200).json({ message: 'Logout completo' })
+}
+
+export const githubCallback = async (req, res) => {
+    const token = generateToken(req.user)
+    res.cookie(
+        'authToken',
+        token,
+        {
+            httpOnly: true,
+            sameSite: 'lax',
+            secure: process.env.NODE_ENV === 'production'
+        }
+    )
+    return res.status(200).json({ message: 'Login exitoso', token })
 }
