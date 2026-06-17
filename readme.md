@@ -1,105 +1,112 @@
-# Backend II - Authentication with Sessions
+# Authentication System with JWT and GitHub OAuth
 
-## Tecnologías utilizadas
+A backend authentication system built with Node.js, Express and MongoDB featuring local authentication, GitHub OAuth, JWT authorization, secure cookies and role-based access control.
 
-- Node.js
-- Express.js
-- MongoDB
-- Mongoose
-- Express Session
-- Connect Mongo
-- Handlebars
-- Socket.io
-- Dotenv
+## Features
 
-## Funcionalidades implementadas
+* User Registration
+* Local Authentication
+* GitHub OAuth Authentication
+* JWT Authentication
+* Secure HTTP-Only Cookies
+* Protected Routes
+* User Profile Endpoint
+* Session Validation Endpoint
+* Admin-Only Routes
+* Logout Functionality
+* MongoDB Persistence
 
-- Login con creación de sesión
-- Logout con destrucción de sesión
-- Ruta protegida `/products`
-- Middleware de autenticación
-- Persistencia de sesiones en MongoDB
-- Renderizado de vistas con Handlebars
-- Pruebas realizadas con Postman
+## Tech Stack
 
-## Instalación
+* Node.js
+* Express.js
+* MongoDB
+* Mongoose
+* Passport.js
+* Passport Local
+* Passport GitHub2
+* JWT
+* bcrypt
+* Cookie Parser
+* Express Session
+* Connect Mongo
 
-Clonar el repositorio:
+## Authentication Flow
 
-```bash
-git clone <url-del-repo>
+### Local Authentication
+
+Register
+→ Login
+→ JWT Generation
+→ Secure Cookie
+→ Protected Routes
+
+### GitHub OAuth
+
+GitHub Authorization
+→ OAuth Callback
+→ User Lookup / Creation
+→ JWT Generation
+→ Secure Cookie
+→ Protected Routes
+
+## API Endpoints
+
+### Authentication
+
+```http
+POST /api/v1/auth/register
+POST /api/v1/auth/login
+POST /api/v1/auth/logout
+GET  /api/v1/auth/profile
+GET  /api/v1/auth/session
+GET  /api/v1/auth/admin
 ```
 
-Instalar dependencias:
+### OAuth
+
+```http
+GET /api/v1/auth/github
+GET /api/v1/auth/github/callback
+```
+
+## Installation
+
+Clone the repository:
+
+```bash
+git clone <repository-url>
+```
+
+Install dependencies:
 
 ```bash
 npm install
 ```
 
-## Variables de entorno
+Create a `.env` file using `.env.example`.
 
-Crear un archivo `.env` en la raíz del proyecto con las siguientes variables:
-
-```env
-PORT=8080
-URI_MONGODB=tu_uri_de_mongodb
-SECRET_KEY=tu_clave_secreta
-```
-
-## Ejecutar el servidor
+Run the server:
 
 ```bash
 node app.js
 ```
 
-o con nodemon:
+## Environment Variables
 
-```bash
-npx nodemon app.js
+```env
+PORT=
+URI_MONGODB=
+SECRET_KEY=
+JWT_SECRET=
+GITHUB_CLIENT_ID=
+GITHUB_CLIENT_SECRET=
+NODE_ENV=development
 ```
 
-## Endpoints principales
+## Author
 
-### Login
+Lautaro Tello
 
-```http
-POST /login
-```
-
-Body JSON:
-
-```json
-{
-  "email": "lauti@test.com",
-  "name": "Lautaro",
-  "role": "admin"
-}
-```
-
-### Ruta protegida
-
-```http
-GET /products
-```
-
-Requiere sesión activa.
-
-### Logout
-
-```http
-POST /logout
-```
-
-Cierra la sesión actual.
-
-## Flujo de prueba en Postman
-
-1. Ejecutar `POST /login`
-2. Acceder a `GET /products`
-3. Ejecutar `POST /logout`
-4. Verificar que `GET /products` devuelva `401`
-
-## Autor
-
-Lautaro Tello  
-Junior Full Stack Developer
+LinkedIn:
+https://linkedin.com/in/lautaro-tello-5a2832321
