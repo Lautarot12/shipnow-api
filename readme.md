@@ -2,6 +2,12 @@
 
 A backend authentication system built with Node.js, Express and MongoDB featuring local authentication, GitHub OAuth, JWT authorization, secure cookies and role-based access control.
 
+## Overview
+
+This project implements a complete authentication and authorization system using JWT, Passport.js and GitHub OAuth.
+
+Users can register, log in with local credentials or GitHub, access protected routes, validate active sessions and interact with role-based resources.
+
 ## Features
 
 * User Registration
@@ -12,11 +18,12 @@ A backend authentication system built with Node.js, Express and MongoDB featurin
 * Protected Routes
 * User Profile Endpoint
 * Session Validation Endpoint
+* Role-Based Access Control (RBAC)
 * Admin-Only Routes
 * Logout Functionality
 * MongoDB Persistence
 
-## Tech Stack
+## Technologies
 
 * Node.js
 * Express.js
@@ -25,30 +32,35 @@ A backend authentication system built with Node.js, Express and MongoDB featurin
 * Passport.js
 * Passport Local
 * Passport GitHub2
-* JWT
+* JSON Web Tokens (JWT)
 * bcrypt
 * Cookie Parser
 * Express Session
 * Connect Mongo
+* Dotenv
 
 ## Authentication Flow
 
 ### Local Authentication
 
+```text
 Register
 → Login
 → JWT Generation
 → Secure Cookie
 → Protected Routes
+```
 
 ### GitHub OAuth
 
+```text
 GitHub Authorization
 → OAuth Callback
 → User Lookup / Creation
 → JWT Generation
 → Secure Cookie
 → Protected Routes
+```
 
 ## API Endpoints
 
@@ -75,7 +87,7 @@ GET /api/v1/auth/github/callback
 Clone the repository:
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/Lautarot12/jwt-oauth-authentication.git
 ```
 
 Install dependencies:
@@ -92,6 +104,12 @@ Run the server:
 node app.js
 ```
 
+Or with nodemon:
+
+```bash
+npx nodemon app.js
+```
+
 ## Environment Variables
 
 ```env
@@ -102,6 +120,19 @@ JWT_SECRET=
 GITHUB_CLIENT_ID=
 GITHUB_CLIENT_SECRET=
 NODE_ENV=development
+```
+
+## Project Structure
+
+```text
+config/
+controllers/
+middlewares/
+models/
+routes/
+strategies/
+views/
+public/
 ```
 
 ## Author
