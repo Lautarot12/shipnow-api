@@ -7,20 +7,15 @@ import viewsRoute from './routes/views.routes.js'
 import http from 'http'
 import { Server } from 'socket.io'
 import connectMongoDB from './config/db.js'
-import dotenv from 'dotenv'
 import Product from './models/product.model.js'
 import cookieParser from 'cookie-parser'
 import session from 'express-session'
 import MongoStore from 'connect-mongo'
-import bcrypt from 'bcrypt'
-import User from './models/user.model.js'
-import jwt from 'jsonwebtoken'
 import passport from 'passport'
 import authRoute from './routes/auth.routes.js'
 import { initializeGithubStrategy } from './strategies/github.strategy.js'
 import { initializeLocalStrategy } from './strategies/local.strategy.js'
-
-dotenv.config()
+import config from './config/env.config.js'
 
 const app = express()
 const server = http.createServer(app)
@@ -30,7 +25,7 @@ connectMongoDB()
 initializeGithubStrategy()
 initializeLocalStrategy()
 
-const PORT = process.env.PORT || 8080
+const PORT = config.port
 
 server.listen(PORT, () => {
     console.log('Servidor ON')
@@ -43,15 +38,15 @@ app.set('view engine', 'handlebars')
 
  
 app.use(session({
-    secret: process.env.SECRET_KEY,
+    secret: config.secretKey,
     resave: false,
     saveUninitialized: false,
     store: MongoStore.create({
-        mongoUrl: process.env.URI_MONGODB,
+        mongoUrl: config.mongoUri,
         ttl: 14 * 24 * 60
     }),
     cookie: {
-        secure: process.env.NODE_ENV === 'production',
+        secure: config.nodeEnv,
         httpOnly: true,
         maxAge: 1200000,
         sameSite: 'lax'

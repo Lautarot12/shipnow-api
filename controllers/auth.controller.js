@@ -1,7 +1,6 @@
 import User from "../models/user.model.js"
 import bcrypt from 'bcrypt'
-import jwt from 'jsonwebtoken'
-import { generateToken, protectRoutes } from '../middlewares/auth.middleware.js'
+import { generateToken } from '../middlewares/auth.middleware.js'
 import passport from "passport"
 
 export const register = async (req, res) => {
