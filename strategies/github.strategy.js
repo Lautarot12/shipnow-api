@@ -1,9 +1,10 @@
 import passport from 'passport'
 import { Strategy as GitHubStrategy } from 'passport-github2'
 import User from '../models/user.model.js'
+import config from '../config/env.config.js'
 
 export const initializeGithubStrategy =  () => {
-    passport.use(new GitHubStrategy({ callbackURL: 'http://localhost:8080/api/v1/auth/github/callback', clientID: process.env.GITHUB_CLIENT_ID, clientSecret: process.env.GITHUB_CLIENT_SECRET }, 
+    passport.use(new GitHubStrategy({ callbackURL: 'http://localhost:8080/api/v1/auth/github/callback', clientID: config.githubClientId, clientSecret: config.githubClientSecret }, 
     async (accessToken, refreshToken, profile, done)=>{
         try {
             const userEmail = profile.emails[0].value

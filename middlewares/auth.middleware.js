@@ -1,10 +1,10 @@
 import jwt from 'jsonwebtoken'
-
+import config from '../config/env.config.js'
 
 export const generateToken = (user)=> {
     return jwt.sign(
         { userId: user.id, role: user.role },
-        process.env.JWT_SECRET,
+        config.jwtSecret,
         { expiresIn: '1h' } 
     )
 }
@@ -15,7 +15,7 @@ export const protectRoutes = (req, res, next) => {
         return res.status(401).json({ message: 'No autorizado' })
     }
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET)
+        const decoded = jwt.verify(token, config.jwtSecret)
         req.user = decoded
         next()
     } catch (error) {

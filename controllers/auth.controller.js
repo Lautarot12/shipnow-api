@@ -2,6 +2,7 @@ import User from "../models/user.model.js"
 import bcrypt from 'bcrypt'
 import { generateToken } from '../middlewares/auth.middleware.js'
 import passport from "passport"
+import config from "../config/env.config.js"
 
 export const register = async (req, res) => {
     const { first_name, last_name, email, password } = req.body
@@ -40,7 +41,7 @@ export const login = async (req, res) => {
         {
             httpOnly: true,
             sameSite: 'lax',
-            secure: process.env.NODE_ENV === 'production'
+            secure: config.nodeEnv === 'production'
         }
     )
     return res.status(200).json({ message: 'Login exitoso', token })
@@ -95,7 +96,7 @@ export const githubCallback = async (req, res) => {
         {
             httpOnly: true,
             sameSite: 'lax',
-            secure: process.env.NODE_ENV === 'production'
+            secure: config.nodeEnv === 'production'
         }
     )
     return res.status(200).json({ message: 'Login exitoso', token })

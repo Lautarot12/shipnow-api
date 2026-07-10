@@ -46,7 +46,7 @@ app.use(session({
         ttl: 14 * 24 * 60
     }),
     cookie: {
-        secure: config.nodeEnv,
+        secure: config.nodeEnv === 'production',
         httpOnly: true,
         maxAge: 1200000,
         sameSite: 'lax'
@@ -56,7 +56,7 @@ app.use(session({
 app.use(express.json())
 app.use(express.static(__dirname + '/public'))
 
-app.use(cookieParser(process.env.SECRET_KEY))
+app.use(cookieParser(config.secretKey))
 app.use(passport.initialize())
 app.use('/api/v1/auth/', authRoute)
 app.use('/api/products', Productsroute)
