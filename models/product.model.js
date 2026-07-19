@@ -38,7 +38,7 @@ const productSchema = new mongoose.Schema({
     category: {
         type: String,
         required: true,
-        enum: ['frescos', 'congelados', 'precocidos']
+        enum: ['frescos', 'congelados', 'precocidos', 'mercaderia']
     },
     thumbnail: {
         type: String,
