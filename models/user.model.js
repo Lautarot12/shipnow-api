@@ -1,14 +1,14 @@
 import mongoose from 'mongoose'
 import bcrypt from 'bcrypt'
-import { USER_ROLES } from '../constants/index.js'
+import { AUTH_PROVIDERS, USER_ROLES } from '../constants/index.js'
 
 const userSchema = new mongoose.Schema({
     first_name: { type: String, required: true },
     last_name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    provider: { type: String, enum: ['local', 'github'], default: 'local'},
-    role: { type: String, enum: [USER_ROLES.ADMIN, USER_ROLES.USER], default: USER_ROLES.USER }
+    provider: { type: String, enum: Object.values(AUTH_PROVIDERS)},
+    role: { type: String, enum: Object.values(USER_ROLES), default: USER_ROLES.USER }
 })
 
 userSchema.pre('save', async function(next) {

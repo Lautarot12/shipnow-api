@@ -16,6 +16,7 @@ import authRoute from './routes/auth.routes.js'
 import { initializeGithubStrategy } from './strategies/github.strategy.js'
 import { initializeLocalStrategy } from './strategies/local.strategy.js'
 import config from './config/env.config.js'
+import mocksRoute from './routes/mocks.routes.js'
 
 const app = express()
 const server = http.createServer(app)
@@ -62,6 +63,7 @@ app.use('/api/v1/auth/', authRoute)
 app.use('/api/products', Productsroute)
 app.use('/api/carts', cartsRoute)
 app.use('/', viewsRoute)
+app.use('/api/mocks', mocksRoute)
 
 
 app.get('/set-cookie', (req, res)=>{

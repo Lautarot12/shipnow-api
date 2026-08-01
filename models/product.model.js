@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import paginate from "mongoose-paginate-v2";
+import { PRODUCT_CATEGORIES } from "../constants/index.js";
 
 const productSchema = new mongoose.Schema({
     title: {
@@ -38,7 +39,7 @@ const productSchema = new mongoose.Schema({
     category: {
         type: String,
         required: true,
-        enum: ['frescos', 'congelados', 'precocidos', 'mercaderia']
+        enum: Object.values(PRODUCT_CATEGORIES)
     },
     thumbnail: {
         type: String,
