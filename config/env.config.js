@@ -1,11 +1,13 @@
 import dotenv from 'dotenv'
+import CustomError from '../errors/CustomError.js'
+import { ERROR_TYPES } from '../errors/error.dictionary.js'
 
 dotenv.config()
 
 function requiredEnv(variableName) {
     const value = process.env[variableName]
     if (!value) {
-        throw new Error(`Missing required variable: ${variableName}`)
+        throw new CustomError(ERROR_TYPES.MISSING_REQUIRED_VARIABLE)
     } 
     return value
 }

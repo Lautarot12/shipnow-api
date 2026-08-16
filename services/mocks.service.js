@@ -1,35 +1,49 @@
+import CustomError from "../errors/CustomError.js"
+import { ERROR_TYPES } from "../errors/error.dictionary.js"
 import { createCarts, createProducts, createUsers } from "../repositories/mocks.repository.js"
 import { generateMockCart, generateMockProduct, generateMockUser } from "../utils/mock.generator.js"
 
+export const validateQuantity = (quantity)=>{
+    const amount = Number(quantity)
+
+    if (!Number.isInteger(amount) || amount  <=0 ) {
+        throw new CustomError(ERROR_TYPES.INVALID_MOCK_QUANTITY)
+    }
+    return amount
+}
 
 export const getMockUsers = (quantity)=>{
-    const amount = Number(quantity) || 10
+    const amount = validateQuantity(quantity)
     return Array.from({length: amount}, ()=>{
         return generateMockUser()
     })
 }
 
 export const getMockProducts = (quantity)=>{
-    const amount = Number(quantity) || 10
+    const amount = validateQuantity(quantity)
     return Array.from({length: amount}, ()=>{
         return generateMockProduct()
     })
 }
 
 export const getMockCarts = (quantity, productIds)=>{
-    const amount = Number(quantity) || 10
+    const amount = validateQuantity(quantity)
     return Array.from({length: amount}, ()=>{
         return generateMockCart(productIds)
     })
 }
 
 export const generateMockData = async ({ users, products, carts }) => {
-    const mockedUsers = getMockUsers(users)
+    const usersAmount = validateQuantity(users)
+    const productsAmount = validateQuantity(products)
+    const cartsAmount = validateQuantity(carts)
+
+    const mockedUsers = getMockUsers(usersAmount)
     await createUsers(mockedUsers)
-    const mockedProducts = getMockProducts(products)
+    const mockedProducts = getMockProducts(productsAmount)
     const savedProducts = await createProducts(mockedProducts)
     const productIds = savedProducts.map(product => product._id)
-    const mockedCarts = getMockCarts(carts, productIds)
+    const mockedCarts = getMockCarts(cartsAmount, productIds)
     await createCarts(mockedCarts)
     return {
         users: mockedUsers.length,

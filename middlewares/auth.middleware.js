@@ -1,5 +1,7 @@
 import jwt from 'jsonwebtoken'
 import config from '../config/env.config.js'
+import CustomError from '../errors/CustomError.js'
+import { ERROR_TYPES } from '../errors/error.dictionary.js'
 
 export const generateToken = (user)=> {
     return jwt.sign(
@@ -12,21 +14,21 @@ export const generateToken = (user)=> {
 export const protectRoutes = (req, res, next) => {
     const token = req.cookies.authToken
     if(!token) {
-        return res.status(401).json({ message: 'No autorizado' })
+        return next(new CustomError(ERROR_TYPES.UNAUTHORIZED))
     }
     try {
         const decoded = jwt.verify(token, config.jwtSecret)
         req.user = decoded
         next()
     } catch (error) {
-        return res.status(401).json({ meesage: 'Token invalido' })
+        return next(new CustomError(ERROR_TYPES.INVALID_TOKEN))
     }
 }
 
 export const roleMiddleware = (allowedRoles) => {
     return (req, res, next) => {
         if(!allowedRoles.includes(req.user.role)) {
-            return res.status(403).json({ message: 'Acceso denegado' })
+            return next(new CustomError(ERROR_TYPES.FORBIDDEN))
         }
         next()
     }

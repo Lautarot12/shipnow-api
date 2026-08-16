@@ -1,88 +1,14 @@
-import { Router } from 'express'
-import Cart from "../models/cart.model.js"
-import Product from '../models/product.model.js'
+import { Router } from "express";
+import { getCartById, addProduct, create, clearCart } from "../controllers/cart.controller.js";
 
 const route = Router()
 
-route.post('/', async (req, res)=>{
-    try {
-        const newCart = await Cart.create({})
-        return res.json(newCart)
-    } catch (error) {
-        res.status(500).json(error)
-    }
-})
+route.get('/:cid', getCartById)
 
-route.get('/:cid', async (req, res)=>{
-    try {
-        const id = req.params.cid
-        const cart = await Cart.findById(id).populate('products.product')
-        
-        if (!cart) {
-            return res.status(404).send('Error, no se encontro el carrito')
-        }
-        return res.json(cart.products)
-    } catch (error) {
-        res.status(500).send(error)
-    }
-})
+route.post('/:cid/product/:pid', addProduct)
 
-route.post('/:cid/product/:pid', async (req, res)=>{
-    try {
-        const cartId = req.params.cid
-        const prodId = req.params.pid
-        const quantity = req.body?.quantity || 1
-       
-        const product = await Product.findById(prodId)
-        
-        if (!product) {
-            return res.status(404).json('Producto no encontrado')
-        }
-        
-        const cart = await Cart.findById(cartId)
-        if (!cart) {
-            return res.status(404).json('Carrito no encontrado')
-        }
-        console.log('products in cart', cart.products)
-        const productIndex = cart.products.findIndex(
-            (p)=>p.product && p.product.equals(prodId)
-        )
+route.post('/', create)
 
-        if (productIndex !== -1) {
-            cart.products[productIndex].quantity =
-            (cart.products[productIndex].quantity || 0) + quantity
-        } else {
-            cart.products.push({ product: prodId, quantity })
-        }
+route.delete('/:cid', clearCart)
 
-        const updatedCart = await cart.save()
-
-        res.status(200).json({ status: 'success', updatedCart })
-    } catch (error) {
-        console.error(error)
-        res.status(500).send(error)
-    }
-})
-
-route.delete('/:cid', async (req, res)=>{
-    try {
-        const cartId = req.params.cid
-        const cart = await Cart.findById(cartId)
-        if (!cart) {
-            return  res.status(404).json({
-            status: 'error',
-            message: 'No se pudo encontrar el carrito'
-        })
-        }
-        cart.products = []
-        await cart.save()
-        res.json({
-            status: 'success',
-            message: 'Carrito vaciado correctamente'
-        })
-        } catch (error) {
-            res.status(500).json(error)
-        }
-    })
-
-    export default route
+export default route

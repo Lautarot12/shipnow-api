@@ -2,17 +2,19 @@ import { Router } from 'express'
 import __dirname from '../utils.js'
 import Product from '../models/product.model.js'
 import Cart from '../models/cart.model.js'
+import CustomError from '../errors/CustomError.js'
+import { ERROR_TYPES } from '../errors/error.dictionary.js'
 
 const route = Router()
 
 function authMiddleware (req, res, next) {
     if (!req.session.user) {
-        return res.status(401).send('Error al autenticar')
+        return next(new CustomError(ERROR_TYPES.SESSION_UNAUTHORIZED))
     }
     next()
 }
 
-route.get('/', async (req, res)=>{
+route.get('/', async (req, res, next)=>{
     try {
         const { limit = 10, page = 1 } = req.query
 
@@ -28,7 +30,7 @@ route.get('/', async (req, res)=>{
 
         res.render("index", { products, links })
     } catch (error) {
-        res.status(500).json({ status: 'error', message: 'Error al mostrar la pagina de home' })
+        next(error)
     }
 })
 
@@ -65,24 +67,28 @@ route.get('/products', authMiddleware, async (req, res)=>{
 
 
 route.post('/login', async (req, res)=>{
-
-    if (!req.body.email || !req.body.name || !req.body.role) {
-        return res.status(401).send('Error, correo o contrasena incorrectas')
-    } 
-
-    req.session.user = {
-        email: req.body.email,
-        name: req.body.name,
-        role: req.body.role
-    }
+    try {
+        if (!req.body.email || !req.body.name || !req.body.role) {
+            throw new CustomError(ERROR_TYPES.INVALID_DATA)
+        } 
     
-    res.status(200).send('Login exitoso')
+        req.session.user = {
+            email: req.body.email,
+            name: req.body.name,
+            role: req.body.role
+        }
+        
+        res.status(200).send('Login exitoso')
+    } catch (error) {
+        next(error)
+    }
+
 })
 
-route.post('/logout', async (req, res)=>{
+route.post('/logout', async (req, res, next)=>{
     req.session.destroy((error)=>{
         if (error) {
-            return res.status(500).send('No se pudo cerrar la sesion')
+            return next(error)
         }
         res.status(200).send('Sesion cerrada.')
     })

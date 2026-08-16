@@ -1,10 +1,16 @@
 import { create, deleteById, getAll, getByCode, getById, update } from '../repositories/product.repository.js'
+import CustomError from '../errors/CustomError.js'
+import { ERROR_TYPES } from '../errors/error.dictionary.js'
+import mongoose from 'mongoose'
 
 const findExistingProduct = async (id) => {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        throw new CustomError(ERROR_TYPES.INVALID_ID)
+    }
     const product = await getById(id)
 
     if (!product) {
-        throw new Error('Error, no se encontro el producto')
+        throw new CustomError(ERROR_TYPES.PRODUCT_NOT_FOUND)
     }
 
     return product
@@ -55,7 +61,7 @@ export const getProductById = async (id) => {
 export const createProduct = async (body)=>{
     const productCodigo = await getByCode(body.code)
     if (productCodigo) {
-        throw new Error('Error, ya existe un producto con ese codigo')
+        throw new CustomError(ERROR_TYPES.DUPLICATE_PRODUCT_CODE)
     }
     const createdProduct = await create(body)
     return createdProduct
@@ -75,7 +81,7 @@ export const updateProduct = async (id, updatedFields)=>{
     if (productByCode.id === id) {
         return await update(id, updatedFields)
     } else{
-        throw new Error('Error, codigo duplicado')
+        throw new CustomError(ERROR_TYPES.DUPLICATE_PRODUCT_CODE)
     }
 }
 

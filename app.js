@@ -17,6 +17,7 @@ import { initializeGithubStrategy } from './strategies/github.strategy.js'
 import { initializeLocalStrategy } from './strategies/local.strategy.js'
 import config from './config/env.config.js'
 import mocksRoute from './routes/mocks.routes.js'
+import { errorMiddleware } from './middlewares/error.middleware.js'
 
 const app = express()
 const server = http.createServer(app)
@@ -65,6 +66,9 @@ app.use('/api/carts', cartsRoute)
 app.use('/', viewsRoute)
 app.use('/api/mocks', mocksRoute)
 
+
+
+app.use(errorMiddleware)
 
 app.get('/set-cookie', (req, res)=>{
     const { idioma } = req.query

@@ -3,80 +3,81 @@ import bcrypt from 'bcrypt'
 import { generateToken } from '../middlewares/auth.middleware.js'
 import passport from "passport"
 import config from "../config/env.config.js"
+import { getUserProfile, loginUser, registerUser } from "../services/auth.service.js"
 
-export const register = async (req, res) => {
-    const { first_name, last_name, email, password } = req.body
-    
-    const coincidence = await User.findOne({ email })
+export const register = async (req, res, next) => {
+    try {
+        const { first_name, last_name, email, password } = req.body
+        await registerUser({
+            first_name,
+            last_name,
+            email,
+            password
+        })
 
-    if (coincidence) {
-        return res.status(409).json({ message: 'Error, ya existe un usuario con ese email' })
+        return res.status(201).json({
+            status: 'success',
+            message: 'Usuario registrado con exito'
+        })
+
+    } catch (error) {
+        next(error)
     }
-
-    await User.create({
-        first_name,
-        last_name,
-        email,
-        password
-    })
-
-    res.status(201).json({ message: 'Usuario registrado con exito' })
 }
 
 
-export const login = async (req, res) => {
-    const { email, password } = req.body
-    const coincidence = await User.findOne({ email })
-    if (!coincidence) {
-        return res.status(401).json({ message: 'Error, credenciales inválidas' })
+export const login = async (req, res, next) => {
+    try {
+        const { email, password } = req.body
+
+        const user = await loginUser(email, password)
+        const token = generateToken(user)
+        res.cookie(
+            'authToken',
+            token,
+            {
+                httpOnly: true,
+                sameSite: 'lax',
+                secure: config.nodeEnv === 'production'
+            }
+        )
+        return res.status(200).json({
+            status: 'success', message: 'Login exitoso', token })
+    } catch (error) {
+        next(error)
     }
-    const passwordCoincidence = await bcrypt.compare(password, coincidence.password)
-    if (!passwordCoincidence) {
-        return res.status(401).json({ message: 'Error, credenciales inválidas' })
-    }
-    const token = generateToken(coincidence)
-    res.cookie(
-        'authToken',
-        token,
-        {
-            httpOnly: true,
-            sameSite: 'lax',
-            secure: config.nodeEnv === 'production'
-        }
-    )
-    return res.status(200).json({ message: 'Login exitoso', token })
 }
 
-export const profile = async (req, res) => {
-    const userId = req.user.userId
-    const userExists = await User.findById(userId)
-    if (!userExists) {
-        return res.status(404).json({ message: 'Error, no se encontro el perfil' })
+export const profile = async (req, res, next) => {
+    try {
+        const user = await getUserProfile(req.user.userId)
+        
+        return res.status(200).json({ status: 'success', message: 'Usuario', user: {
+            first_name: user.first_name,
+            last_name: user.last_name,
+            email: user.email,
+            role: user.role
+        }})
+    } catch (error) {
+        next(error)
     }
-    
-    return res.status(200).json({ message: 'Usuario', user: {
-        first_name: userExists.first_name,
-        last_name: userExists.last_name,
-        email: userExists.email,
-        role: userExists.role
-    }})
 }
 
-export const session = async (req, res) => {
-    const userId = req.user.userId
-    const userExists = await User.findById(userId)
-    if (!userExists) {
-        return res.status(404).json({ message: 'Error, no se encontro el perfil' })
+export const session = async (req, res, next) => {
+    try {
+        const user = await getUserProfile(req.user.userId)
+
+        return res.status(200).json({ status: 'success', message: 'Usuario',
+            authenticated: true,
+            user: {
+            first_name: user.first_name,
+            last_name: user.last_name,
+            email: user.email,
+            role: user.role
+        }})
+    } catch (error) {
+        next(error)
     }
-    
-    return res.status(200).json({ message: 'Usuario',
-        authenticated: true,
-        user: {
-        first_name: userExists.first_name,
-        last_name: userExists.last_name,
-        email: userExists.email,
-        role: userExists.role
-    }})
 }
 
 export const admin = async (req, res) => {
