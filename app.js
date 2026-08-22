@@ -18,6 +18,8 @@ import { initializeLocalStrategy } from './strategies/local.strategy.js'
 import config from './config/env.config.js'
 import mocksRoute from './routes/mocks.routes.js'
 import { errorMiddleware } from './middlewares/error.middleware.js'
+import logger from './config/logger.config.js'
+import loggerRouter from './routes/logger.routes.js'
 
 const app = express()
 const server = http.createServer(app)
@@ -30,7 +32,7 @@ initializeLocalStrategy()
 const PORT = config.port
 
 server.listen(PORT, () => {
-    console.log('Servidor ON')
+    logger.info('Servidor ON')
 })
 
 app.engine('handlebars', handlebars.engine())
@@ -65,8 +67,7 @@ app.use('/api/products', Productsroute)
 app.use('/api/carts', cartsRoute)
 app.use('/', viewsRoute)
 app.use('/api/mocks', mocksRoute)
-
-
+app.use('/api/logger', loggerRouter)
 
 app.use(errorMiddleware)
 
@@ -76,20 +77,17 @@ app.get('/set-cookie', (req, res)=>{
 })
 
 app.get('/get-cookies', (req, res)=>{
-    console.log(req.cookies)
     const { idioma } = req.cookies
     idioma === 'ingles'? res.send('hello') : res.send('Hola')
 })
 
 io.on('connection', async (socket)=>{
-    console.log('Nuevo usuario conectado', socket.id)
     const productList = await Product.find()
     io.emit('productList', productList)
 
     socket.on('submit', async (data)=>{
         const addedProd = await Product.create(data)
         const productList = await Product.find()
-        console.log('Se agrego:', addedProd)
         io.emit('productList', productList)
     })
 
@@ -97,6 +95,5 @@ io.on('connection', async (socket)=>{
         const deletedProd = await Product.findByIdAndDelete(prod2delete.id)
         const productList = await Product.find()
         io.emit('productList', productList)
-        console.log('se elimino:', deletedProd)
     })
 })

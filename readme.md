@@ -1,14 +1,26 @@
-# Authentication System with JWT, GitHub OAuth and Mock Data Generator
+# ShipNow API - Authentication, Mock Data, Error Handling and Logging
 
-A backend authentication system built with Node.js, Express and MongoDB featuring local authentication, GitHub OAuth, JWT authorization, secure cookies, role-based access control and a complete mock data generation module.
+A backend API built with Node.js, Express and MongoDB featuring local authentication, GitHub OAuth, JWT authorization, role-based access control, mock data generation, centralized error handling and professional logging with Winston.
 
 ---
 
 ## Overview
 
-This project implements a complete authentication and authorization system using JWT, Passport.js and GitHub OAuth.
+ShipNow API is a backend application built using a layered architecture:
 
-It also includes a professional layered architecture (Controller → Service → Repository), environment configuration validation, centralized constants and a mocking module capable of generating realistic users, products and carts for testing.
+```text
+Routes
+    ↓
+Controllers
+    ↓
+Services
+    ↓
+Repositories
+    ↓
+MongoDB
+```
+
+The project includes authentication and authorization, MongoDB persistence, realistic mock data generation, centralized error handling and a professional logging system.
 
 ---
 
@@ -34,6 +46,10 @@ It also includes a professional layered architecture (Controller → Service →
 - Environment configuration validation
 - Centralized constants
 - MongoDB persistence
+- Centralized error handling
+- Custom application errors
+- Centralized error dictionary
+- Global error middleware
 
 ### Mocking Module
 
@@ -42,6 +58,19 @@ It also includes a professional layered architecture (Controller → Service →
 - Generate mock carts
 - Insert mock data into MongoDB
 - Real MongoDB relationships between Products and Carts
+- Validation of mock quantities
+- Controlled error handling for invalid mock data
+
+### Logging
+
+- Centralized Winston logger
+- Multiple logging levels
+- Console logging
+- Persistent log files
+- Error log persistence
+- Automatic log rotation
+- Environment-based logging behavior
+- Logger test endpoint
 
 ---
 
@@ -61,6 +90,8 @@ It also includes a professional layered architecture (Controller → Service →
 - Connect Mongo
 - Dotenv
 - Faker.js
+- Winston
+- Winston Daily Rotate File
 
 ---
 
@@ -120,7 +151,7 @@ GET /api/v1/auth/github/callback
 
 ### Mock Endpoints
 
-Generate data without saving it to MongoDB.
+These endpoints generate mock data without saving it to MongoDB.
 
 ```http
 GET /api/mocks/users?quantity=20
@@ -128,15 +159,27 @@ GET /api/mocks/products?quantity=20
 GET /api/mocks/carts?quantity=10
 ```
 
-### Generate Mock Data
+The `quantity` query parameter must be a positive integer.
 
-Insert generated data into MongoDB.
+Example:
+
+```http
+GET /api/mocks/users?quantity=20
+```
+
+Invalid quantities such as negative numbers, zero or non-integer values are rejected by the centralized error handling system.
+
+---
+
+## Generate Mock Data
+
+The following endpoint generates and stores mock data in MongoDB.
 
 ```http
 POST /api/mocks/generate
 ```
 
-Example body:
+Example request body:
 
 ```json
 {
@@ -148,11 +191,224 @@ Example body:
 
 This endpoint:
 
-- generates mock users
-- generates mock products
-- generates mock carts
-- creates real MongoDB relationships between carts and products
-- stores everything in the database
+- Generates mock users
+- Generates mock products
+- Generates mock carts
+- Creates real MongoDB relationships between carts and products
+- Stores the generated data in MongoDB
+
+---
+
+## Error Handling
+
+ShipNow API uses a centralized error handling system.
+
+The application includes:
+
+- Custom errors
+- Centralized error dictionary
+- Global error middleware
+- Consistent error responses
+
+Errors are detected in the appropriate layer, especially in services, while the final HTTP response is handled by the global error middleware.
+
+### Error Response Structure
+
+All handled errors follow a consistent structure:
+
+```json
+{
+    "status": "error",
+    "code": "PRODUCT_NOT_FOUND",
+    "message": "Producto no encontrado"
+}
+```
+
+### Examples
+
+#### Product Not Found
+
+```json
+{
+    "status": "error",
+    "code": "PRODUCT_NOT_FOUND",
+    "message": "Producto no encontrado"
+}
+```
+
+#### Invalid Mock Quantity
+
+```json
+{
+    "status": "error",
+    "code": "INVALID_MOCK_QUANTITY",
+    "message": "La cantidad de mocks es invalida"
+}
+```
+
+#### Database Error
+
+```json
+{
+    "status": "error",
+    "code": "DATABASE_ERROR",
+    "message": "Error interno de base de datos"
+}
+```
+
+---
+
+## Logging
+
+ShipNow API uses **Winston** as a centralized logging system.
+
+The logger is configured in a dedicated module and can be imported and used throughout the application without duplicating its configuration.
+
+### Logging Levels
+
+The application supports the following logging levels:
+
+- `debug` - Detailed information useful during development.
+- `http` - HTTP request and response information.
+- `info` - General application events.
+- `warning` - Expected or potentially problematic situations.
+- `error` - Unexpected errors and application failures.
+- `fatal` - Critical errors that can prevent the application from working correctly.
+
+### Logging Examples
+
+The logger is used for important application events such as:
+
+- Server startup
+- MongoDB connection
+- MongoDB connection failures
+- Mock data generation
+- Invalid mock quantities
+- Expected application errors
+- Unexpected server errors
+- Important application operations
+
+The global error middleware also integrates with the logger so errors can be recorded while maintaining the centralized error response structure.
+
+---
+
+## Log Files
+
+Application logs are stored inside the `logs/` directory.
+
+Example structure:
+
+```text
+logs/
+├── combined.log
+└── error.log
+```
+
+The `error.log` file is reserved for important errors and contains only:
+
+```text
+error
+fatal
+```
+
+Regular informational logs such as `info` and `debug` are not stored in `error.log`.
+
+Log files are generated by the application and are excluded from Git using `.gitignore`.
+
+---
+
+## Log Rotation
+
+Winston Daily Rotate File is used to prevent log files from growing indefinitely.
+
+The logging system automatically rotates log files according to the configured rotation strategy, keeping the log history organized and preventing excessively large files.
+
+---
+
+## Logger Test Endpoint
+
+A dedicated endpoint is available to verify that the logging system is working correctly.
+
+```http
+GET /api/logger/test
+```
+
+This endpoint generates logs using all configured levels:
+
+```text
+debug
+http
+info
+warning
+error
+fatal
+```
+
+After calling the endpoint, the generated logs can be checked in:
+
+```text
+Console
+logs/combined.log
+logs/error.log
+```
+
+The `error.log` file should contain only the `error` and `fatal` entries.
+
+---
+
+## Environment-Based Logging
+
+The logger changes its behavior depending on the application environment.
+
+### Development
+
+Development mode provides more detailed information and allows `debug` logs to be displayed.
+
+```env
+NODE_ENV=development
+```
+
+### Production
+
+Production mode uses a more controlled logging configuration and focuses on relevant application events such as:
+
+```text
+info
+warning
+error
+fatal
+```
+
+The logging behavior is controlled through the application's environment configuration.
+
+---
+
+## Mock Data Structure
+
+### Users
+
+- `first_name`
+- `last_name`
+- `email`
+- `password`
+- `provider`
+- `role`
+
+### Products
+
+- `title`
+- `description`
+- `code`
+- `price`
+- `stock`
+- `status`
+- `category`
+
+### Carts
+
+- `products`
+- `quantity`
+- MongoDB ObjectId references
 
 ---
 
@@ -178,7 +434,7 @@ Run the server:
 node app.js
 ```
 
-or
+Or using nodemon:
 
 ```bash
 npx nodemon app.js
@@ -187,6 +443,8 @@ npx nodemon app.js
 ---
 
 ## Environment Variables
+
+Create a `.env` file with the required environment variables:
 
 ```env
 PORT=
@@ -198,6 +456,8 @@ GITHUB_CLIENT_SECRET=
 NODE_ENV=development
 ```
 
+The application validates required environment variables during startup.
+
 ---
 
 ## Project Structure
@@ -206,6 +466,7 @@ NODE_ENV=development
 config/
 constants/
 controllers/
+errors/
 middlewares/
 models/
 repositories/
@@ -213,6 +474,7 @@ routes/
 services/
 strategies/
 utils/
+logs/
 views/
 public/
 ```
@@ -233,34 +495,95 @@ Repositories
 MongoDB
 ```
 
+### Routes
+
+Responsible for defining API endpoints and connecting them with controllers.
+
+### Controllers
+
+Handle HTTP requests and responses. Errors are forwarded to the global error middleware.
+
+### Services
+
+Contain the application's business logic and detect domain-specific errors.
+
+### Repositories
+
+Handle communication with MongoDB and database operations.
+
+### Middleware
+
+Contains reusable application logic such as authentication, authorization and centralized error handling.
+
+### Errors
+
+Contains custom errors and the centralized error dictionary used throughout the application.
+
+### Utils
+
+Contains reusable utilities such as mock data generators.
+
+### Logger
+
+The logger configuration is centralized in its own module and can be imported by different parts of the application.
+
 ---
 
-## Mock Data Structure
+## Testing Error Handling
 
-### Users
+The centralized error handling system can be tested with invalid requests.
 
-- first_name
-- last_name
-- email
-- password
-- provider
-- role
+### Invalid Product ID
 
-### Products
+Example:
 
-- title
-- description
-- code
-- price
-- stock
-- status
-- category
+```http
+GET /api/products/aaaaaaaa
+```
 
-### Carts
+This should be handled by the application's error handling layer instead of exposing a raw database error.
 
-- products
-- quantity
-- MongoDB ObjectId references
+### Invalid Mock Quantity
+
+Example:
+
+```http
+GET /api/mocks/users?quantity=-5
+```
+
+Expected response:
+
+```json
+{
+    "status": "error",
+    "code": "INVALID_MOCK_QUANTITY",
+    "message": "La cantidad de mocks es invalida"
+}
+```
+
+### Duplicate Product Code
+
+Creating a product using an existing product code should return a controlled application error.
+
+### Duplicate User
+
+Registering a user using an email that already exists should return a controlled application error.
+
+---
+
+## Git and Logs
+
+Generated log files should not be committed to the repository.
+
+The `logs/` directory is ignored through `.gitignore` so generated log files remain local to the application environment.
+
+The repository should be delivered without:
+
+```text
+node_modules/
+logs/*.log
+.env
+```
 
 ---
 
@@ -268,6 +591,6 @@ MongoDB
 
 **Lautaro Tello**
 
-LinkedIn
+LinkedIn:
 
 https://linkedin.com/in/lautaro-tello-5a2832321

@@ -1,3 +1,4 @@
+import logger from "../config/logger.config.js"
 import CustomError from "../errors/CustomError.js"
 import { ERROR_TYPES } from "../errors/error.dictionary.js"
 import { createCarts, createProducts, createUsers } from "../repositories/mocks.repository.js"
@@ -7,6 +8,7 @@ export const validateQuantity = (quantity)=>{
     const amount = Number(quantity)
 
     if (!Number.isInteger(amount) || amount  <=0 ) {
+        logger.warning(`Cantidad de mocks invalida: ${quantity}`)
         throw new CustomError(ERROR_TYPES.INVALID_MOCK_QUANTITY)
     }
     return amount
@@ -45,6 +47,7 @@ export const generateMockData = async ({ users, products, carts }) => {
     const productIds = savedProducts.map(product => product._id)
     const mockedCarts = getMockCarts(cartsAmount, productIds)
     await createCarts(mockedCarts)
+    logger.info('Mocks generados correctamente.')
     return {
         users: mockedUsers.length,
         products: savedProducts.length,
