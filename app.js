@@ -20,6 +20,8 @@ import mocksRoute from './routes/mocks.routes.js'
 import { errorMiddleware } from './middlewares/error.middleware.js'
 import logger from './config/logger.config.js'
 import loggerRouter from './routes/logger.routes.js'
+import swaggerSpec from './config/swagger.config.js'
+import swaggerUi from 'swagger-ui-express'
 
 const app = express()
 const server = http.createServer(app)
@@ -59,6 +61,7 @@ app.use(session({
 
 app.use(express.json())
 app.use(express.static(__dirname + '/public'))
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
 
 app.use(cookieParser(config.secretKey))
 app.use(passport.initialize())

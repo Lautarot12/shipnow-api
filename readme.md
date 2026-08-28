@@ -95,6 +95,86 @@ The project includes authentication and authorization, MongoDB persistence, real
 
 ---
 
+## API Documentation
+
+ShipNow API includes interactive API documentation using Swagger and OpenAPI.
+
+Swagger UI is available at:
+
+http://localhost:8080/api/docs
+
+From Swagger UI you can explore and test the documented API endpoints directly from the browser.
+
+### Documented Modules
+
+The API documentation is organized into the following modules:
+
+- Auth / Users
+- Products
+- Carts
+- Mocks
+- Logger
+
+### Swagger Features
+
+The documentation includes:
+
+- HTTP methods and routes
+- Path parameters
+- Query parameters
+- Request bodies
+- Successful responses
+- Error responses
+- Reusable schemas
+- Authentication-related responses
+- Mock data generation examples
+- Logger testing endpoint
+
+### Reusable Schemas
+
+The following schemas are defined and reused throughout the documentation:
+
+- User
+- Product
+- Cart
+- CartItem
+- ErrorResponse
+- SuccessResponse
+
+### Logger Testing
+
+The logger test endpoint is available at:
+
+GET /api/v1/logger/test
+
+This endpoint is intended exclusively for validating the application's logging system and is not a business functionality.
+
+### Mock Data
+
+Mock endpoints can be used to generate test data.
+
+Examples:
+
+GET /api/mocks/users?quantity=20
+
+GET /api/mocks/products?quantity=20
+
+GET /api/mocks/carts?quantity=10
+
+Mock data can also be generated and inserted into MongoDB using:
+
+POST /api/mocks/generate
+
+Example request body:
+
+{
+    "users": 20,
+    "products": 50,
+    "carts": 10
+}
+
+---
+
 ## Authentication Flow
 
 ### Local Authentication
