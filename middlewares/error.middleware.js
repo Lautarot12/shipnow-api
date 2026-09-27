@@ -1,8 +1,29 @@
 import CustomError from "../errors/CustomError.js";
-import { ERROR_TYPES } from "../errors/error.dictionary.js";
+import multer from "multer";
 import logger from "../config/logger.config.js";
+import { ERROR_TYPES } from "../errors/error.dictionary.js";
+
 
 export const errorMiddleware = (error, req, res, next)=>{
+    if (error instanceof multer.MulterError) {
+        if (error.code === 'LIMIT_FILE_SIZE') {
+            const customError = new CustomError(ERROR_TYPES.FILE_TOO_LARGE)
+            return res.status(customError.status).json({
+            status: 'error',
+            code: customError.code,
+            message: customError.message
+        })
+        }
+
+        if (error.code === 'LIMIT_UNEXPECTED_FILE') {
+            const customError = new CustomError(ERROR_TYPES.UNEXPECTED_FILE)
+            return res.status(customError.status).json({
+            status: 'error',
+            code: customError.code,
+            message: customError.message
+        })
+        }
+    }
     if (error instanceof CustomError) {
         logger.warning(error.message)
         return res.status(error.status).json({

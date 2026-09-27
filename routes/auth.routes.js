@@ -1,9 +1,10 @@
 import { Router } from 'express'
-import { admin, githubCallback, logout, profile, register, session } from '../controllers/auth.controller.js'
+import { admin, githubCallback, logout, profile, register, session, uploadUserDocument } from '../controllers/auth.controller.js'
 import { login } from '../controllers/auth.controller.js'
 import { protectRoutes, roleMiddleware } from '../middlewares/auth.middleware.js'
 import passport from 'passport'
 import { USER_ROLES } from '../constants/index.js'
+import upload from '../config/multer.config.js'
 
 const router = Router()
 
@@ -211,5 +212,95 @@ router.get('/github', passport.authenticate('github', { scope: ['user:email'] })
  *         description: Error interno del servidor
  */
 router.get('/github/callback', passport.authenticate('github', { session: false }), githubCallback)
+
+/**
+ * @swagger
+ * /api/v1/auth/{uid}/documents:
+ *   post:
+ *     tags:
+ *       - Users
+ *     summary: Subir documento de usuario
+ *     parameters:
+ *       - in: path
+ *         name: uid
+ *         required: true
+ *         schema:
+ *           type: string
+ *           example: 507f1f77bcf86cd799439011
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - file
+ *               - documentType
+ *             properties:
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *               documentType:
+ *                 type: string
+ *                 enum:
+ *                   - DNI
+ *                   - PASAPORTE
+ *                   - LICENCIA
+ *     responses:
+ *       200:
+ *         description: Documento subido correctamente.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 message:
+ *                   type: string
+ *                   example: Documento subido correctamente
+ *                 user:
+ *                   $ref: '#/components/schemas/User'
+ *       400:
+ *         description: Archivo o tipo de documento inválido.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       404:
+ *         description: Usuario no encontrado.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: error
+ *                 code:
+ *                   type: string
+ *                   example: USER_NOT_FOUND
+ *                 message:
+ *                   type: string
+ *                   example: Usuario no encontrado
+ *       500:
+ *         description: Error interno del servidor.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: error
+ *                 code:
+ *                   type: string
+ *                   example: INTERNAL_SERVER_ERROR
+ *                 message:
+ *                   type: string
+ *                   example: Error interno del servidor
+ */
+router.post('/:uid/documents', protectRoutes, upload.single('file'), uploadUserDocument)
 
 export default router

@@ -19,3 +19,9 @@ export const PRODUCT_CATEGORIES = Object.freeze({
     PRECODIDOS: 'precocidos',
     MERCADERIA: 'mercaderia'
 })
+
+export const DOCUMENT_TYPES = Object.freeze({
+    DNI: 'DNI',
+    PASSPORT: 'PASAPORTE',
+    LICENSE: 'LICENCIA'
+})

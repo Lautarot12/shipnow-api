@@ -1,5 +1,6 @@
 import winston from "winston";
 import DailyRotateFile from "winston-daily-rotate-file";
+import config from "./env.config.js";
 
 const levels = {
     levels: {
@@ -22,7 +23,7 @@ const format = winston.format.combine(
 )
 
 const consoleTransport = new winston.transports.Console({
-    level: 'debug'
+    level: config.logLevel
 })
 
 const errorRotateTransport = new DailyRotateFile({

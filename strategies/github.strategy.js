@@ -4,7 +4,7 @@ import User from '../models/user.model.js'
 import config from '../config/env.config.js'
 
 export const initializeGithubStrategy =  () => {
-    passport.use(new GitHubStrategy({ callbackURL: 'http://localhost:8080/api/v1/auth/github/callback', clientID: config.githubClientId, clientSecret: config.githubClientSecret }, 
+    passport.use(new GitHubStrategy({ callbackURL: config.githubCallbackUrl, clientID: config.githubClientId, clientSecret: config.githubClientSecret }, 
     async (accessToken, refreshToken, profile, done)=>{
         try {
             const userEmail = profile.emails[0].value

@@ -93,5 +93,41 @@ export const ERROR_TYPES = {
         code: 'INVALID_ID',
         status: 400,
         message: 'El ID proporcionado no es valido'
+    },
+
+    INVALID_FILE_TYPE: {
+        code: 'INVALID_FILE_TYPE',
+        status: 400,
+        message: 'El tipo de archivo no es valido'
+    },
+
+    FILE_TOO_LARGE: {
+        code: 'FILE_TOO_LARGE',
+        status: 400,
+        message: 'El tamaño del archivo supera el maximo permitido'
+    },
+    
+    MISSING_FILE: {
+        code: 'MISSING_FILE',
+        status: 400,
+        message: 'Falta el archivo requerido'
+    },
+
+    INVALID_DOCUMENT_TYPE: {
+        code: 'INVALID_DOCUMENT_TYPE',
+        status: 400,
+        message: 'El tipo de documento es invalido'
+    },
+
+    FILE_SAVE_ERROR: {
+        code: 'FILE_SAVE_ERROR',
+        status: 500,
+        message: 'Error al guardar el archivo'
+    },
+
+    UNEXPECTED_FILE: {
+        code: 'UNEXPECTED_FILE',
+        status: 400,
+        message: 'El campo del archivo no es valido'
     }
 }

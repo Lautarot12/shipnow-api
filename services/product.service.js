@@ -18,6 +18,9 @@ const findExistingProduct = async (id) => {
 
 export const getProducts = async (queryparams)=>{
     const { limit = 10, page = 1, sort, query } = queryparams
+    const parsedLimit = Math.min(Number(limit) || 10, 100)
+    const parsedPage = Math.max(Number(page) || 1, 1)
+
             let filter = {}
             if (query) {
                 if(['frescos', 'congelados', 'precocidos'].includes(query)) filter.category = query
@@ -33,8 +36,8 @@ export const getProducts = async (queryparams)=>{
                 }
             }
             const data = await getAll(filter, {
-                limit,
-                page,
+                limit: parsedLimit,
+                page: parsedPage,
                 sort: sortOption,
         })
 

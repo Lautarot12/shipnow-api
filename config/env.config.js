@@ -2,7 +2,9 @@ import dotenv from 'dotenv'
 import CustomError from '../errors/CustomError.js'
 import { ERROR_TYPES } from '../errors/error.dictionary.js'
 
-dotenv.config()
+dotenv.config({
+    path: process.env.NODE_ENV === 'test' ? '.env.test' : '.env'
+})
 
 function requiredEnv(variableName) {
     const value = process.env[variableName]
@@ -19,7 +21,9 @@ const config = {
     secretKey: requiredEnv('SECRET_KEY'),
     jwtSecret: requiredEnv('JWT_SECRET'),
     githubClientId: requiredEnv('GITHUB_CLIENT_ID'),
-    githubClientSecret: requiredEnv('GITHUB_CLIENT_SECRET')
+    githubClientSecret: requiredEnv('GITHUB_CLIENT_SECRET'),
+    logLevel: requiredEnv('LOG_LEVEL'),
+    githubCallbackUrl: requiredEnv('GITHUB_CALLBACK_URL')
 }
 
 export default config

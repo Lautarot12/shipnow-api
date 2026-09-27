@@ -3,7 +3,7 @@ import bcrypt from 'bcrypt'
 import { generateToken } from '../middlewares/auth.middleware.js'
 import passport from "passport"
 import config from "../config/env.config.js"
-import { getUserProfile, loginUser, registerUser } from "../services/auth.service.js"
+import { addUserDocument, getUserProfile, loginUser, registerUser } from "../services/auth.service.js"
 
 export const register = async (req, res, next) => {
     try {
@@ -56,7 +56,8 @@ export const profile = async (req, res, next) => {
             first_name: user.first_name,
             last_name: user.last_name,
             email: user.email,
-            role: user.role
+            role: user.role,
+            documents: user.documents
         }})
     } catch (error) {
         next(error)
@@ -73,7 +74,8 @@ export const session = async (req, res, next) => {
             first_name: user.first_name,
             last_name: user.last_name,
             email: user.email,
-            role: user.role
+            role: user.role,
+            documents: user.documents
         }})
     } catch (error) {
         next(error)
@@ -101,4 +103,22 @@ export const githubCallback = async (req, res) => {
         }
     )
     return res.status(200).json({ message: 'Login exitoso', token })
+}
+
+export const uploadUserDocument = async (req, res, next)=>{
+    try {
+        const { uid } = req.params
+        const { documentType } = req.body
+
+        const user = await addUserDocument(uid, req.file, documentType)
+
+        return res.status(200).json({
+            status: 'success',
+            message: 'Documento subido correctamente',
+            user
+        })
+
+    } catch (error) {
+        next(error)
+    }
 }

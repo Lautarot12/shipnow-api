@@ -17,6 +17,7 @@ export const schemas = {
             },
             password: {
                 type: 'string',
+                writeOnly: true,
                 example: 'password123'
             },
             role: {
@@ -26,6 +27,12 @@ export const schemas = {
             provider: {
                 type: 'string',
                 example: 'local'
+            },
+            documents: {
+                type: 'array',
+                items: {
+                    $ref: '#/components/schemas/Document'
+                }
             }
         }
     },
@@ -99,11 +106,11 @@ export const schemas = {
             },
             code: {
                 type: 'string',
-                example: 'PRODUCT_NOT_FOUND'
+                example: 'INVALID_FILE_TYPE'
             },
             message: {
                 type: 'string',
-                example: 'Producto no encontrado'
+                example: 'El tipo de archivo no es valido'
             }
         }
     },
@@ -123,6 +130,41 @@ export const schemas = {
                 type: 'object',
                 nullable: true
             }
+        }
+    },
+
+    Document: {
+        type: 'object',
+        properties: {
+            originalName: {
+                type: 'string',
+                example: 'document.pdf'
+            },
+            fileName: {
+                type: 'string',
+                example: '1727891234567-document.pdf'
+            },
+            path: {
+                type: 'string',
+                example: 'uploads/users/1727891234567-document.pdf'
+            },
+            mimeType: {
+                type: 'string',
+                example: 'application/pdf'
+            },
+            size: {
+                type: 'number',
+                example: 245678
+            },
+            type: {
+                type: 'string',
+                enum: ['DNI', 'PASAPORTE', 'LICENCIA'],
+                example: 'DNI'
+            },
+            uploadedAt: {
+                type: 'string',
+                format: 'date-time'
+            } 
         }
     }
 }

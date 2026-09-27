@@ -12,7 +12,7 @@ const route = Router()
 
 /**
  * @swagger
- * /api/v1/carts/{cid}:
+ * /api/carts/{cid}:
  *   get:
  *     summary: Obtener un carrito por ID
  *     description: Obtiene un carrito y sus productos asociados.
@@ -49,7 +49,7 @@ route.get('/:cid', getCartById)
 
 /**
  * @swagger
- * /api/v1/carts/{cid}/product/{pid}:
+ * /api/carts/{cid}/product/{pid}:
  *   post:
  *     summary: Agregar un producto al carrito
  *     description: Agrega un producto existente a un carrito. Si el producto ya existe, incrementa su cantidad.
@@ -103,13 +103,13 @@ route.post('/:cid/product/:pid', addProduct)
 
 /**
  * @swagger
- * /api/v1/carts:
+ * /api/carts:
  *   post:
  *     summary: Crear un carrito
  *     description: Crea un carrito vacío.
  *     tags: [Carts]
  *     responses:
- *       200:
+ *       201:
  *         description: Carrito creado correctamente
  *         content:
  *           application/json:
@@ -126,7 +126,7 @@ route.post('/', create)
 
 /**
  * @swagger
- * /api/v1/carts/{cid}:
+ * /api/carts/{cid}:
  *   delete:
  *     summary: Vaciar un carrito
  *     description: Elimina todos los productos del carrito indicado.

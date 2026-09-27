@@ -4,38 +4,21 @@ import cartsRoute from './routes/carts.routes.js'
 import __dirname from './utils.js'
 import handlebars from 'express-handlebars'
 import viewsRoute from './routes/views.routes.js'
-import http from 'http'
-import { Server } from 'socket.io'
-import connectMongoDB from './config/db.js'
 import Product from './models/product.model.js'
 import cookieParser from 'cookie-parser'
 import session from 'express-session'
 import MongoStore from 'connect-mongo'
 import passport from 'passport'
 import authRoute from './routes/auth.routes.js'
-import { initializeGithubStrategy } from './strategies/github.strategy.js'
-import { initializeLocalStrategy } from './strategies/local.strategy.js'
 import config from './config/env.config.js'
 import mocksRoute from './routes/mocks.routes.js'
 import { errorMiddleware } from './middlewares/error.middleware.js'
-import logger from './config/logger.config.js'
 import loggerRouter from './routes/logger.routes.js'
 import swaggerSpec from './config/swagger.config.js'
 import swaggerUi from 'swagger-ui-express'
+import healthRoute from './routes/health.routes.js'
 
 const app = express()
-const server = http.createServer(app)
-const io = new Server(server)
-
-connectMongoDB()
-initializeGithubStrategy()
-initializeLocalStrategy()
-
-const PORT = config.port
-
-server.listen(PORT, () => {
-    logger.info('Servidor ON')
-})
 
 app.engine('handlebars', handlebars.engine())
 
@@ -59,7 +42,8 @@ app.use(session({
     }
 }))
 
-app.use(express.json())
+app.use(express.json({ limit: '1mb' }))
+app.use(express.urlencoded({ extended: true, limit: '1mb' }))
 app.use(express.static(__dirname + '/public'))
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
 
@@ -71,6 +55,7 @@ app.use('/api/carts', cartsRoute)
 app.use('/', viewsRoute)
 app.use('/api/mocks', mocksRoute)
 app.use('/api/logger', loggerRouter)
+app.use('/api/health', healthRoute)
 
 app.use(errorMiddleware)
 
@@ -84,19 +69,4 @@ app.get('/get-cookies', (req, res)=>{
     idioma === 'ingles'? res.send('hello') : res.send('Hola')
 })
 
-io.on('connection', async (socket)=>{
-    const productList = await Product.find()
-    io.emit('productList', productList)
-
-    socket.on('submit', async (data)=>{
-        const addedProd = await Product.create(data)
-        const productList = await Product.find()
-        io.emit('productList', productList)
-    })
-
-    socket.on('deleteProd', async (prod2delete)=>{
-        const deletedProd = await Product.findByIdAndDelete(prod2delete.id)
-        const productList = await Product.find()
-        io.emit('productList', productList)
-    })
-})
+export default app

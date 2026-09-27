@@ -12,3 +12,8 @@ export const getUserById = async (id) =>{
     return await User.findById(id)
 }
 
+export const addDocumentToUser = async (id, documentData)=>{
+    return await User.findByIdAndUpdate(id,
+    {$push: {documents: documentData}},
+    {new: true}
+)}
