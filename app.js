@@ -17,6 +17,7 @@ import loggerRouter from './routes/logger.routes.js'
 import swaggerSpec from './config/swagger.config.js'
 import swaggerUi from 'swagger-ui-express'
 import healthRoute from './routes/health.routes.js'
+import shipmentRoute from './routes/shipment.routes.js'
 
 const app = express()
 
@@ -53,8 +54,11 @@ app.use('/api/v1/auth/', authRoute)
 app.use('/api/products', Productsroute)
 app.use('/api/carts', cartsRoute)
 app.use('/', viewsRoute)
-app.use('/api/mocks', mocksRoute)
-app.use('/api/logger', loggerRouter)
+app.use('/api/shipments', shipmentRoute)
+if (config.nodeEnv !== 'production') {
+    app.use('/api/mocks', mocksRoute)
+    app.use('/api/logger', loggerRouter)
+}
 app.use('/api/health', healthRoute)
 
 app.use(errorMiddleware)

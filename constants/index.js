@@ -25,3 +25,11 @@ export const DOCUMENT_TYPES = Object.freeze({
     PASSPORT: 'PASAPORTE',
     LICENSE: 'LICENCIA'
 })
+
+export const SHIPMENT_STATUS = Object.freeze({
+    PENDING: 'PENDING',
+    PREPARING: 'PREPARING',
+    IN_TRANSIT: 'IN_TRANSIT',
+    DELIVERED: 'DELIVERED',
+    CANCELLED: 'CANCELLED'
+})

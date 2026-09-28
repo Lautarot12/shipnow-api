@@ -7,6 +7,8 @@ import Product from "../models/product.model.js"
 import User from "../models/user.model.js"
 import { getUserByEmail } from "../repositories/auth.repository.js"
 import Cart from "../models/cart.model.js"
+import Shipment from '../models/shipment.model.js'
+import fs from 'fs/promises'
 
 describe('Products API', ()=>{
 
@@ -15,6 +17,8 @@ describe('Products API', ()=>{
     let cartId
     let authCookie
     let testUserId
+    let shipmentId
+    let shipmentReceiptPath
 
     before(async ()=>{
         await connectMongoDB()
@@ -24,12 +28,22 @@ describe('Products API', ()=>{
         await Product.deleteMany({
             code: 'TEST-PRODUCT-001'
         })
+
+        await Shipment.deleteOne({
+            trackingNumber: 'TEST-TRACK-001'
+        })
+
         await User.deleteOne({
             email: testUserEmail
         })
         await Cart.deleteOne({
             _id: cartId
         })
+
+        if (shipmentReceiptPath) {
+            await fs.unlink(shipmentReceiptPath).catch(()=>{})
+        }
+
         await mongoose.connection.close()
     })
 
@@ -533,5 +547,221 @@ describe('Products API', ()=>{
         expect(response.body).to.have.property('enviroment')
         expect(response.body).to.have.property('uptime')
         expect(response.body).to.have.property('timestamp')
+    })
+
+    it('POST /api/shipments deberia crear un envio correctamente', async ()=>{
+        const shipment = {
+            trackingNumber: 'TEST-TRACK-001',
+            user: testUserId,
+            status: 'PENDING',
+            origin: 'Buenos Aires',
+            destination: 'Mendoza'
+        }
+
+        const response = await request(app)
+            .post('/api/shipments')
+            .send(shipment)
+
+        expect(response.status).to.equal(201)
+        expect(response.body.status).to.equal('success')
+        expect(response.body).to.have.property('payload')
+        expect(response.body.payload.trackingNumber).to.equal('TEST-TRACK-001')
+        expect(response.body.payload.user.toString()).to.equal(testUserId)
+
+        shipmentId = response.body.payload._id
+    })
+
+    it('GET /api/shipments deberia devolver envios paginados', async ()=>{
+        const response = await request(app)
+            .get('/api/shipments')
+            .query({
+                page: 1,
+                limit: 10
+        })
+
+        expect(response.status).to.equal(200)
+        expect(response.body.status).to.equal('success')
+        expect(response.body).to.have.property('payload')
+        expect(response.body.payload).to.be.an('array')
+        expect(response.body).to.have.property('total')
+        expect(response.body).to.have.property('totalPages')
+        expect(response.body).to.have.property('page')
+        expect(response.body).to.have.property('limit')
+        expect(response.body.limit).to.equal(10)
+    })
+
+    it('GET /api/shipments/:sid deberia devolver un envio existente', async ()=>{
+        const response = await request(app)
+            .get(`/api/shipments/${shipmentId}`)
+
+        expect(response.status).to.equal(200)
+        expect(response.body.status).to.equal('success')
+        expect(response.body).to.have.property('payload')
+        expect(response.body.payload._id).to.equal(shipmentId)
+        expect(response.body.payload.trackingNumber).to.equal('TEST-TRACK-001')
+    })
+
+    it('GET /api/shipments/:sid deberia devolver error si el envio no existe', async ()=>{
+        const fakeShipmentId = new mongoose.Types.ObjectId()
+
+        const response = await request(app)
+            .get(`/api/shipments/${fakeShipmentId}`)
+
+        expect(response.status).to.equal(404)
+        expect(response.body.status).to.equal('error')
+        expect(response.body.code).to.equal('SHIPMENT_NOT_FOUND')
+    })
+
+    it('PUT /api/shipments/:sid deberia actualizar un envio correctamente', async ()=>{
+        const response = await request(app)
+            .put(`/api/shipments/${shipmentId}`)
+            .send({
+                status: 'IN_TRANSIT',
+                destination: 'San Rafael'
+            })
+
+        expect(response.status).to.equal(200)
+        expect(response.body.status).to.equal('success')
+        expect(response.body).to.have.property('payload')
+        expect(response.body.payload.status).to.equal('IN_TRANSIT')
+        expect(response.body.payload.destination).to.equal('San Rafael')
+    })
+
+    it('PUT /api/shipments/:sid deberia devolver error con un estado invalido', async ()=>{
+        const response = await request(app)
+            .put(`/api/shipments/${shipmentId}`)
+            .send({
+                status: 'VOLANDO'
+            })
+
+        expect(response.status).to.equal(400)
+        expect(response.body.status).to.equal('error')
+        expect(response.body.code).to.equal('INVALID_SHIPMENT_STATUS')
+    })
+
+    it('GET /api/shipments/tracking/:trackingNumber deberia devolver el envio', async ()=>{
+        const response = await request(app)
+            .get('/api/shipments/tracking/TEST-TRACK-001')
+
+        expect(response.status).to.equal(200)
+        expect(response.body.status).to.equal('success')
+        expect(response.body).to.have.property('payload')
+        expect(response.body.payload.trackingNumber).to.equal('TEST-TRACK-001')
+    })
+
+    it('GET /api/shipments/tracking/:trackingNumber deberia devolver error si no existe', async ()=>{
+        const response = await request(app)
+            .get('/api/shipments/tracking/TRACK-INEXISTENTE')
+
+        expect(response.status).to.equal(404)
+        expect(response.body.status).to.equal('error')
+        expect(response.body.code).to.equal('SHIPMENT_NOT_FOUND')
+    })
+
+    it('POST /api/shipments deberia devolver error si el tracking ya existe', async ()=>{
+        const response = await request(app)
+            .post('/api/shipments')
+            .send({
+                trackingNumber: 'TEST-TRACK-001',
+                user: testUserId,
+                status: 'PENDING',
+                origin: 'Cordoba',
+                destination: 'Mendoza'
+            })
+
+        expect(response.status).to.equal(409)
+        expect(response.body.status).to.equal('error')
+        expect(response.body.code).to.equal('DUPLICATE_TRACKING_NUMBER')
+    })
+
+    it('POST /api/shipments/:sid/receipt deberia subir un comprobante correctamente', async ()=>{
+        const response = await request(app)
+            .post(`/api/shipments/${shipmentId}/receipt`)
+            .attach('file', Buffer.from('Comprobante de prueba'), {
+                filename: 'receipt.pdf',
+                contentType: 'application/pdf'
+            })
+
+        expect(response.status).to.equal(200)
+        expect(response.body.status).to.equal('success')
+        expect(response.body.message).to.equal('Comprobante subido correctamente')
+        expect(response.body).to.have.property('payload')
+        expect(response.body.payload).to.have.property('receipts')
+        expect(response.body.payload.receipts).to.be.an('array')
+        expect(response.body.payload.receipts.length).to.be.greaterThan(0)
+
+        const receipt = response.body.payload.receipts[
+            response.body.payload.receipts.length - 1
+        ]
+
+        expect(receipt.originalName).to.equal('receipt.pdf')
+        expect(receipt.mimeType).to.equal('application/pdf')
+        expect(receipt.size).to.be.greaterThan(0)
+
+        shipmentReceiptPath = receipt.path
+    })
+
+    it('POST /api/shipments/:sid/receipt deberia devolver error si el envio no existe', async ()=>{
+        const fakeShipmentId = new mongoose.Types.ObjectId()
+
+        const response = await request(app)
+            .post(`/api/shipments/${fakeShipmentId}/receipt`)
+            .attach('file', Buffer.from('Comprobante de prueba'), {
+                filename: 'receipt.pdf',
+                contentType: 'application/pdf'
+            })
+
+        expect(response.status).to.equal(404)
+        expect(response.body.status).to.equal('error')
+        expect(response.body.code).to.equal('SHIPMENT_NOT_FOUND')
+    })
+
+    it('DELETE /api/shipments/:sid deberia eliminar un envio correctamente', async ()=>{
+        const response = await request(app)
+            .delete(`/api/shipments/${shipmentId}`)
+
+        expect(response.status).to.equal(200)
+        expect(response.body.status).to.equal('success')
+        expect(response.body.message).to.equal('Envío eliminado correctamente')
+        expect(response.body).to.have.property('payload')
+    })
+
+    it('GET /api/shipments/:sid deberia devolver error despues de eliminar el envio', async ()=>{
+        const response = await request(app)
+            .get(`/api/shipments/${shipmentId}`)
+
+        expect(response.status).to.equal(404)
+        expect(response.body.code).to.equal('SHIPMENT_NOT_FOUND')
+    })
+
+    it('GET /api/docs deberia estar disponible', async ()=>{
+        const response = await request(app)
+            .get('/api/docs/')
+
+        expect(response.status).to.equal(200)
+        expect(response.headers['content-type']).to.include('text/html')
+        expect(response.text).to.include('swagger-ui')
+    })
+
+    it('GET /api/mocks/users deberia generar usuarios mock correctamente', async ()=>{
+        const response = await request(app)
+            .get('/api/mocks/users')
+            .query({ quantity: 3 })
+
+        expect(response.status).to.equal(200)
+        expect(response.body.status).to.equal('success')
+        expect(response.body).to.have.property('payload')
+        expect(response.body.payload).to.be.an('array')
+        expect(response.body.payload).to.have.lengthOf(3)
+    })
+
+    it('GET /api/mocks/users deberia devolver error con cantidad invalida', async ()=>{
+        const response = await request(app)
+            .get('/api/mocks/users')
+            .query({ quantity: 0 })
+
+        expect(response.status).to.equal(400)
+        expect(response.body.status).to.equal('error')
+        expect(response.body.code).to.equal('INVALID_MOCK_QUANTITY')
     })
 })

@@ -129,5 +129,23 @@ export const ERROR_TYPES = {
         code: 'UNEXPECTED_FILE',
         status: 400,
         message: 'El campo del archivo no es valido'
+    },
+
+    SHIPMENT_NOT_FOUND: {
+        code: 'SHIPMENT_NOT_FOUND',
+        status: 404,
+        message: 'Envio no encontrado'
+    },
+
+    DUPLICATE_TRACKING_NUMBER: {
+        code: 'DUPLICATE_TRACKING_NUMBER',
+        status: 409,
+        message: 'Ya existe un envio con ese tracking number'
+    },
+
+    INVALID_SHIPMENT_STATUS: {
+        code: 'INVALID_SHIPMENT_STATUS',
+        status: 400,
+        message: 'El estado del envio no es valido'
     }
 }

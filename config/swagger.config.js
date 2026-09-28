@@ -29,12 +29,20 @@ const swaggerOptions = {
                 description: 'Endpoints para gestión de carritos'
             },
             {
+                name: 'Shipments',
+                description: 'Gestion de envios y tracking'
+            },
+            {
                 name: 'Mocks',
                 description: 'Endpoints para generación de datos simulados'
             },
             {
                 name: 'Logger',
                 description: 'Endpoints para probar el sistema de logging'
+            },
+            {
+                name: 'Health',
+                description: 'Estado y disponibilidad de la API'
             }
         ],
         components: {

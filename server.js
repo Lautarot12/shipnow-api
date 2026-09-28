@@ -11,10 +11,6 @@ import logger from './config/logger.config.js'
 const server = http.createServer(app)
 const io = new Server(server)
 
-connectMongoDB()
-initializeGithubStrategy()
-initializeLocalStrategy()
-
 const PORT = config.port
 
 const startServer = async () => {
@@ -29,6 +25,7 @@ const startServer = async () => {
         })
     } catch (error) {
         logger.fatal(`No se pudo iniciar el servidor: ${error.message}`)
+        process.exit(1)
     }
 }
 

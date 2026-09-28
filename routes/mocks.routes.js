@@ -12,7 +12,7 @@ const route = Router()
 
 /**
  * @swagger
- * /api/v1/mocks/users:
+ * /api/mocks/users:
  *   get:
  *     summary: Generar usuarios mock
  *     description: Genera usuarios simulados sin almacenarlos en MongoDB.
@@ -44,7 +44,7 @@ route.get('/users', getUsersMock)
 
 /**
  * @swagger
- * /api/v1/mocks/products:
+ * /api/mocks/products:
  *   get:
  *     summary: Generar productos mock
  *     description: Genera productos simulados sin almacenarlos en MongoDB.
@@ -76,7 +76,7 @@ route.get('/products', getProductsMock)
 
 /**
  * @swagger
- * /api/v1/mocks/carts:
+ * /api/mocks/carts:
  *   get:
  *     summary: Generar carritos mock
  *     description: Genera carritos simulados sin almacenarlos en MongoDB.
@@ -108,7 +108,7 @@ route.get('/carts', getCartsMock)
 
 /**
  * @swagger
- * /api/v1/mocks/generate:
+ * /api/mocks/generate:
  *   post:
  *     summary: Generar e insertar datos mock
  *     description: Genera usuarios, productos y carritos simulados y los almacena en MongoDB. Los carritos mantienen relaciones con los productos generados.

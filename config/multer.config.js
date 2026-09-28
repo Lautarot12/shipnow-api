@@ -5,32 +5,32 @@ import CustomError from "../errors/CustomError.js"
 import { ERROR_TYPES } from "../errors/error.dictionary.js"
 import logger from "./logger.config.js"
 
-const uploadsRoute = path.join(__dirname, 'uploads', 'users')
-
 const allowedMimeTypes = [
     'application/pdf',
     'image/jpeg',
     'image/png'
 ]
 
-const storage = multer.diskStorage({
-    destination: (req, file, cb) =>{
-        cb(null, uploadsRoute)
+const createStorage = (folder) => multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, path.join(__dirname, 'uploads', folder))
     },
-    filename: (req, file, cb) =>{
+    filename: (req, file, cb) => {
         const uniqueName = `${Date.now()}-${file.originalname}`
         cb(null, uniqueName)
     }
 })
 
-const upload = multer({
-    storage,
-    fileFilter: (req, file, cb)=>{
+const createUpload = (folder) => multer({
+    storage: createStorage(folder),
+    fileFilter: (req, file, cb) => {
         if (!allowedMimeTypes.includes(file.mimetype)) {
-            logger.warning(`Tipo de archivo invalido, MIME type recibido: ${file.mimetype}, Nombre del archivo: ${file.originalname}`)
+            logger.warning(
+                `Tipo de archivo invalido, MIME type recibido: ${file.mimetype}, Nombre del archivo: ${file.originalname}`
+            )
             return cb(new CustomError(ERROR_TYPES.INVALID_FILE_TYPE), false)
-        } 
-        
+        }
+
         cb(null, true)
     },
     limits: {
@@ -38,4 +38,8 @@ const upload = multer({
     }
 })
 
-export default upload
+const userUpload = createUpload('users')
+const shipmentUpload = createUpload('shipments')
+
+export { shipmentUpload }
+export default userUpload
