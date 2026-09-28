@@ -1065,6 +1065,7 @@ shipnow-api/
 │   └── swagger.schemas.js
 │
 ├── constants/
+│   ├── index.js
 │
 ├── controllers/
 │   ├── auth.controller.js
@@ -1119,6 +1120,7 @@ shipnow-api/
 │   └── functional.test.js
 │
 ├── utils/
+│    └── mock.generator.js
 │
 ├── uploads/
 │   ├── users/
@@ -1126,6 +1128,11 @@ shipnow-api/
 │
 ├── logs/
 ├── views/
+├    ├── layouts/
+├        ├── index.handlebars
+├        ├── products.handlebars
+├        ├── realTimeProducts.handlebars
+├
 ├── public/
 │
 ├── .dockerignore
@@ -1135,6 +1142,7 @@ shipnow-api/
 ├── docker-compose.yml
 ├── package.json
 ├── package-lock.json
+├── utils.js
 ├── server.js
 └── app.js
 ```
